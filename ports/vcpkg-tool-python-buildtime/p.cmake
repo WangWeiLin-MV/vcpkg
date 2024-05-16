@@ -1,0 +1,82 @@
+cmake_minimum_required(VERSION 3.29)
+include(CMakePrintHelpers)
+
+list(APPEND _column_id              306)
+list(APPEND _column_compatibility   "SameMinorVersion:3.6")
+list(APPEND _column_interval        "{3.6,3.7)")
+
+list(APPEND _column_id              307)
+list(APPEND _column_compatibility   "AnyNewerVersion:3.7")
+list(APPEND _column_interval        "{3.7,)")
+
+
+set(_map_intervals "{2.7,2.8);{3.7,3.8);{3.8,)")
+set(_map_ids "207;307;307")
+
+set(_intervals "{2.7,2.8);{3.7,)")
+
+
+function(combine_intervals)
+    set(_schema_auto_increment 0)
+    set(_interval_list "(0,2};(2.2,3.3);{123.456.7r+alpha.8.9,2.8};(3.8,+infty);{2.3+3,2}")
+
+
+    list(APPEND _column_lower_endpoints "")
+    list(APPEND _column_upper_endpoints "")
+    list(APPEND _column_interval_index "")
+
+    foreach(_raw_interval IN LISTS _interval_list)
+        message("----------------")
+        # cmake_print_variables(_raw_interval)
+
+        if(_raw_interval MATCHES "^([\\(\\{])([^\\,\\(\\)\\{\\}]+),(\\+infty|[^\\,\\(\\)\\{\\}]+)([\\)\\}])$")
+            string(COMPARE EQUAL "{" "${CMAKE_MATCH_1}" _lower_bounded)
+            set(_lower_subset "${CMAKE_MATCH_2}")
+            set(_upper_subset "${CMAKE_MATCH_3}")
+            string(COMPARE EQUAL "}" "${CMAKE_MATCH_4}" _upper_bounded)
+            # cmake_print_variables(_lower_bounded)
+            # cmake_print_variables(_lower_subset)
+            # cmake_print_variables(_upper_subset)
+            # cmake_print_variables(_upper_bounded)
+        else()
+            message(FATAL_ERROR "Invalid interval format of `${r}`.")
+        endif()
+        if(_lower_subset MATCHES "^(0|[1-9][0-9]*)(\\.0|\\.[1-9][0-9]*)?(\\.0|\\.[1-9][0-9]*)?(.*)$")
+            set(_lower_major "${CMAKE_MATCH_1}")
+            set(_lower_minor "${CMAKE_MATCH_2}")
+            set(_lower_patch "${CMAKE_MATCH_3}")
+            set(_lower_exten "${CMAKE_MATCH_4}")
+            cmake_print_variables(_lower_major)
+            cmake_print_variables(_lower_minor)
+            cmake_print_variables(_lower_patch)
+            cmake_print_variables(_lower_exten)
+        else()
+            message(FATAL_ERROR "Invalid version format of `${_lower_subset}` in `${_raw_interval}.")
+        endif()
+        #     string(EQUAL "\\(" "${CMAKE_MATCH_1}" _lower_bounded)
+        #     cmake_print_variables(_lower_bounded)
+        #     # _bound_lower
+        # # else()
+        # #     message(FATAL_ERROR "Invalid interval format of `${_subset_left}`.")
+        # endif()
+
+        # list(APPEND _column_endpoints_lower "${_subset_left}")
+        # list(APPEND _column_endpoints_upper "${_subset_right}")
+        # list(APPEND _column_endpoints_index "${_schema_auto_increment}")
+        # math(EXPR _schema_auto_increment "${_schema_auto_increment} + 1")
+    endforeach()
+
+    # message("----------------")
+    # cmake_print_variables(_column_endpoints_lower)
+    # cmake_print_variables(_column_endpoints_upper)
+    # cmake_print_variables(_column_endpoints_index)
+endfunction()
+message("====")
+message("====")
+message("====")
+combine_intervals()
+
+# function(find_intervals COMPATIBILITY_FIND_VERSION)
+#     cmake_print_variables(COMPATIBILITY_FIND_VERSION)
+# endfunction()
+# find_intervals(2.6)
